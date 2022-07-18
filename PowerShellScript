@@ -1,0 +1,52 @@
+
+Clear-Host
+$MOVEMENTSIZE = 10
+$keys = "{BKSP}", "{BREAK}", "{CAPSLOCK}", "{DOWN}", "{END}", "{ENTER}", "{HELP}", "{HOME}", "{INSERT}", "{LEFT}", "{NUMLOCK}", "{PGDN}", "{PGUP}", "{RIGHT}", "{SCROLLLOCK}"
+
+$opt = (Get-Host).PrivateData
+$opt.WarningBackgroundColor = "DarkCyan"
+$opt.WarningForegroundColor = "white"
+
+$logOffHour = 17 #5 PM
+
+function GetRandomKey {
+    return $keys[(Get-Random -Minimum 0 -Maximum $keys.Length)]
+}
+
+function GetRandomSleepTime {
+    return Get-Random -Minimum 1 -Maximum 30
+}
+
+function LogOff(){
+Start-Process -NoNewWindow -FilePath "C:\Windows\System32\shutdown.exe" -ArgumentList "/l"
+}
+
+Do {
+
+    if ((get-date).TimeOfDay.Hours -ge $logOffHour) {
+        Write-Warning ("Timer Off after " + $logOffHour);
+        (LogOff)
+        break
+    }
+    $keyType = (GetRandomKey)
+    $sleepTime = (GetRandomSleepTime)
+    [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+    [System.Windows.Forms.SendKeys]::SendWait($keyType)
+    $POSITION = [Windows.Forms.Cursor]::Position
+    $POSITION.x += $MOVEMENTSIZE
+    $POSITION.y += $MOVEMENTSIZE
+    [Windows.Forms.Cursor]::Position = $POSITION
+    Write-Warning $keyType
+    Write-Warning ("Sleeping for " + $sleepTime + " seconds")
+
+    Start-Sleep -Seconds $sleepTime
+  $keyType = (GetRandomKey)
+    [System.Windows.Forms.SendKeys]::SendWait($keyType)
+    $POSITION = [Windows.Forms.Cursor]::Position
+    $POSITION.x -= $MOVEMENTSIZE
+    $POSITION.y -= $MOVEMENTSIZE
+    [Windows.Forms.Cursor]::Position = $POSITION
+    [System.Windows.Forms.SendKeys]::SendWait($keyType)
+    Write-Warning $keyType
+    Start-Sleep -Seconds $sleepTime
+}while ($true)
